@@ -19,20 +19,38 @@ def hex_to_chars(hex_string)
   hex_to_bytes(hex_string).map(&:chr).join
 end
 
-# def hex_to_str(bytes)
-#   bytes.map { |i| '%02x' % i }.join
-# end
+#
+# Converts an array of bytes in to a string in hexadecimal format
+#
+# @param bytes - Array of bytes
+# @returns String with hexadecimal representation of the bytes
+def bytes_to_hex(bytes)
+  bytes.map { |i| format('%<byte>02x', byte: i) }.join
+end
 
-# def xor_str(s1, s2)
-#   s1b = hex_string_to_hex_a(s1)
-#   s2b = hex_string_to_hex_a(s2)
-#   xor_bytes(s1b, s2b)
-# end
+#
+# Takes two hex strings, converts them to bytes, XORs them, and returns a hex string
+#
+# @param hex1 - String in hex format
+# @param hex2 - String in hex format
+# @returns String in hex format which represents the XOR
+def xor_hex(hex1, hex2)
+  s1b = hex_to_bytes(hex1)
+  s2b = hex_to_bytes(hex2)
+  xor_bytes(s1b, s2b)
+end
 
-# def xor_bytes(b1, b2)
-#   results_in_bytes = (0...b1.length).map { |i| b1[i] ^ b2[i] }
-#   hex_to_str(results_in_bytes)
-# end
+#
+# Takes two arrays of bytes, XORs them, and returns a hex string representing the bytes.
+# Note, both arrays should be of the same length
+#
+# @param bytes1 - Array of bytes
+# @param bytes2 - Array of bytes
+# @returns String in hex format which represents the XOR
+def xor_bytes(bytes1, bytes2)
+  results_in_bytes = (0...bytes1.length).map { |i| bytes1[i] ^ bytes2[i] }
+  bytes_to_hex(results_in_bytes)
+end
 
 # def sentence_score(s)
 #   str_to_bin(s).chars.map { |i| i.match(/[\w\s\d]/) ? 1 : 0 }.sum / s.length.to_f
@@ -53,12 +71,6 @@ end
 
 # def hamming_distance(s1, s2)
 #   s1.bytes.zip(s2.bytes).map { |(a, b)| (a ^ b).to_s(2) }.join.scan('1').size
-# end
-
-# def prob2
-#   s = '1c0111001f010100061a024b53535009181c'
-#   xor = '686974207468652062756c6c277320657965'
-#   xor_str(s, xor)
 # end
 
 # def prob3

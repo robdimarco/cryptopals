@@ -17,4 +17,15 @@ RSpec.describe 'cryptopals.com Set 1' do
       ).to eq(output_in_base_64)
     end
   end
+
+  describe 'challenge 2' do
+    let(:input_as_hex) { '1c0111001f010100061a024b53535009181c' }
+    let(:xor_against_as_hex) { '686974207468652062756c6c277320657965' }
+    let(:expected) { '746865206b696420646f6e277420706c6179' }
+
+    it 'can XOR hex strings' do
+      expect(xor_hex(input_as_hex, xor_against_as_hex)).to \
+        eq(expected)
+    end
+  end
 end
