@@ -104,27 +104,7 @@ def decoded_string_from_hex(encoded_string)
   hex_to_chars(vals[0].decoded_string)
 end
 
-# def prob3
-#   s = '1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
-# end
-
-# def prob4
-#   require 'net/http'
-#   strings = Net::HTTP.get(URI('https://cryptopals.com/static/challenge-data/4.txt')).lines.map(&:strip)
-#   pairs = strings.flat_map do |s|
-#     potential_strings_from_single_char_xor(s)
-#   end
-#   best = pairs.min_by { |(_, s)| -1 * sentence_score(s) }
-#   [str_to_bin(best[1]), best[0], best[1]]
-# end
-
 # def prob5
 #   s = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal"
 #   encrypt(s, 'ICE')
-# end
-
-# def prob6
-#   data = ''
-#   (2..40).each do |keysize|
-#   end
 # end

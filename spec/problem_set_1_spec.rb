@@ -42,4 +42,21 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
       expect(decoded_string_from_hex(input_as_hex)).to eq(expected)
     end
   end
+
+  describe 'challenge 4' do
+    let(:file_path) { 'data/set-1-challenge-4.txt' }
+    it 'has file' do
+      expect(File.exist?(file_path)).to be(true), 'Missing file. Redownload from https://cryptopals.com/sets/1/challenges/4'
+    end
+
+    it 'can find the single character encrypted string', speed: :slow do
+      strings = File.read(file_path).lines.map(&:strip)
+      potential_strings = strings.flat_map do |s|
+        potential_strings_from_single_char_xor(s)
+      end
+      best = potential_strings.max_by { |val| sentence_score(val.decoded_string) }
+
+      expect("Now that the party is jumping\n").to eq(hex_to_chars(best.decoded_string))
+    end
+  end
 end
