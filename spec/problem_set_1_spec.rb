@@ -59,4 +59,18 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
       expect("Now that the party is jumping\n").to eq(hex_to_chars(best.decoded_string))
     end
   end
+
+  describe 'challenge 5' do
+    let(:input) { "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal" }
+    let(:key) { 'ICE' }
+    let(:encrypted_string) { encrypt(input, key) }
+    let(:expected) do
+      '0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272' \
+        'a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f'
+    end
+
+    it 'will encrypt successfully' do
+      expect(encrypted_string).to eq(expected)
+    end
+  end
 end

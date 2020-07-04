@@ -82,10 +82,14 @@ def potential_strings_from_single_char_xor(encoded_string)
   end
 end
 
-# def encrypt(s, key)
-#   full_key = key * ((s.length / key.length) + 1)
-#   xor_bytes(s.bytes, full_key[0..s.length].bytes)
-# end
+#
+# @param string - Plain text string to encrypt
+# @param key - Key to encrypt with
+# @returns String in hex format which represents the encrypted string
+def encrypt(string, key)
+  full_key = key * ((string.length / key.length) + 1)
+  xor_bytes(string.bytes, full_key[0..string.length].bytes)
+end
 
 # def hamming_distance(s1, s2)
 #   s1.bytes.zip(s2.bytes).map { |(a, b)| (a ^ b).to_s(2) }.join.scan('1').size
@@ -103,8 +107,3 @@ def decoded_string_from_hex(encoded_string)
 
   hex_to_chars(vals[0].decoded_string)
 end
-
-# def prob5
-#   s = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal"
-#   encrypt(s, 'ICE')
-# end
