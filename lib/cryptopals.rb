@@ -52,17 +52,35 @@ def xor_bytes(bytes1, bytes2)
   bytes_to_hex(results_in_bytes)
 end
 
-# def sentence_score(s)
-#   str_to_bin(s).chars.map { |i| i.match(/[\w\s\d]/) ? 1 : 0 }.sum / s.length.to_f
-# end
+# Takes in a hex string and sees how likely the string is to being
+# a sentence.
+#
+# @param hex_string - Input hex tring
+# @returns Float between 0 and 1 representing how likely a string is to being a sentence
+def sentence_score(hex_string)
+  real_string = hex_to_chars(hex_string).chars
+  real_string.map { |i| i.match(/[\w ]/) ? 1 : 0 }.sum / real_string.length.to_f
+end
 
-# def potential_strings_from_single_char_xor(s)
-#   (0..255).map do |h|
-#     xor = hex_to_str([h] * s.length)
-#     rv = xor_str(s, xor)
-#     [h, rv]
-#   end
-# end
+DecodedString = Struct.new(:encoding_byte, :decoded_string)
+
+# Given a hex string XOR'd with a single character, find all possible
+# decoded strings.
+#
+# @param encoded_string - The hex-encoded string that has been XOR'd
+# @returns Array of Decoded Strings
+def potential_strings_from_single_char_xor(encoded_string)
+  # for all bytes...
+  (0..255).map do |decoded_char|
+    # Create a hex string equal in length to the target
+    decoding_string = bytes_to_hex([decoded_char] * encoded_string.length)
+
+    DecodedString.new(
+      decoded_char,
+      xor_hex(encoded_string, decoding_string)
+    )
+  end
+end
 
 # def encrypt(s, key)
 #   full_key = key * ((s.length / key.length) + 1)
@@ -73,11 +91,21 @@ end
 #   s1.bytes.zip(s2.bytes).map { |(a, b)| (a ^ b).to_s(2) }.join.scan('1').size
 # end
 
+# Takes a hex string that has been XOR'd with a single character and iterates through single characters
+# to find the most likely candidate for the decoded string
+#
+# @param encoded_string - The hex-encoded string that has been XOR'd
+# @returns String - The most likely decoded string
+def decoded_string_from_hex(encoded_string)
+  vals = potential_strings_from_single_char_xor(encoded_string).sort_by do |val|
+    -1 * sentence_score(val.decoded_string)
+  end
+
+  hex_to_chars(vals[0].decoded_string)
+end
+
 # def prob3
 #   s = '1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
-#   vals = potential_strings_from_single_char_xor(s).sort_by { |(_, s)| -1 * sentence_score(s) }
-
-#   vals[0]
 # end
 
 # def prob4
