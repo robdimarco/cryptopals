@@ -73,4 +73,28 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
       expect(encrypted_string).to eq(expected)
     end
   end
+
+  describe 'challenge 6' do
+    let(:file_path) { 'data/set-1-challenge-6.txt' }
+    let(:file_data) { File.read(file_path).lines.map(&:strip).join}
+    it 'has file' do
+      expect(File.exist?(file_path)).to be(true), 'Missing file. Redownload from https://cryptopals.com/sets/1/challenges/6'
+    end
+
+    describe 'hamming_distance' do
+      it 'calculates correct value' do
+        expect(hamming_distance('this is a test', 'wokka wokka!!!')).to eq(37)
+      end
+    end
+
+    describe 'find_key_size_for_encrypted_file' do
+      it 'calculates the correct key size' do
+        expect(find_key_size_for_encrypted_file(file_data)).to eq(13)
+      end
+    end
+
+    it 'can decrypt file with arbitrary key', speed: :slow do
+      strings = File.read(file_path).lines.map(&:strip)
+    end
+  end
 end

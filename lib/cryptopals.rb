@@ -91,9 +91,28 @@ def encrypt(string, key)
   xor_bytes(string.bytes, full_key[0..string.length].bytes)
 end
 
-# def hamming_distance(s1, s2)
-#   s1.bytes.zip(s2.bytes).map { |(a, b)| (a ^ b).to_s(2) }.join.scan('1').size
-# end
+def find_key_size_for_encrypted_file(string, min_key_size: 2, max_key_size: 40, comparisons: 2)
+  bytes = hex_to_bytes(string)
+  (min_key_size..max_key_size).to_a.min_by do |key_size|
+    blocks = (0...(2*comparisons)).map do |i|
+      offset = i * key_size
+      bytes[offset...(offset + key_size)]
+    end
+
+    distances = (0...comparisons).map do |i|
+      block_1 = blocks[i * 2]
+      block_2 = blocks[(i * 2) + 1]
+      hamming_distance(bytes_to_hex(block_1), bytes_to_hex(block_2)) / key_size.to_f
+    end
+
+    # Now get the average distance
+    distances.sum / comparisons
+  end
+end
+
+def hamming_distance(s1, s2)
+  s1.bytes.zip(s2.bytes).map { |(a, b)| (a ^ b).to_s(2) }.join.scan('1').size
+end
 
 # Takes a hex string that has been XOR'd with a single character and iterates through single characters
 # to find the most likely candidate for the decoded string
