@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'securerandom'
 
 RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
   describe 'challenge 1' do
@@ -89,7 +90,9 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
 
     describe 'find_key_size_for_encrypted_file' do
       it 'calculates the correct key size' do
-        expect(find_key_size_for_encrypted_file(file_data)).to eq(13)
+        input = File.read(__FILE__)
+        key = SecureRandom.random_bytes(23).bytes.map(&:chr).join
+        expect(find_key_size_for_encrypted_file(encrypt(input, key))).to eq(key.length)
       end
     end
 

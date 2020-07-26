@@ -59,6 +59,8 @@ end
 # @returns Float between 0 and 1 representing how likely a string is to being a sentence
 def sentence_score(hex_string)
   real_string = hex_to_chars(hex_string).chars
+  words = real_strip.scan(/[\w+]/)
+
   real_string.map { |i| i.match(/[\w ]/) ? 1 : 0 }.sum / real_string.length.to_f
 end
 
@@ -91,7 +93,12 @@ def encrypt(string, key)
   xor_bytes(string.bytes, full_key[0..string.length].bytes)
 end
 
-def find_key_size_for_encrypted_file(string, min_key_size: 2, max_key_size: 40, comparisons: 2)
+#
+# @param string - Encrypted string (in hex)
+# @param min_key_size - Smallest possible key size
+# @param max_key_size - Largest possible key size
+# @param comparisons - Number of comparisons to make. More comparisons, more likely to get right value
+def find_key_size_for_encrypted_file(string, min_key_size: 2, max_key_size: 40, comparisons: 4)
   bytes = hex_to_bytes(string)
   (min_key_size..max_key_size).to_a.min_by do |key_size|
     blocks = (0...(2*comparisons)).map do |i|
@@ -100,8 +107,8 @@ def find_key_size_for_encrypted_file(string, min_key_size: 2, max_key_size: 40, 
     end
 
     distances = (0...comparisons).map do |i|
-      block_1 = blocks[i * 2]
-      block_2 = blocks[(i * 2) + 1]
+      block_1 = bytes[0...(comparisons * key_size)]
+      block_2 = bytes[(comparisons * key_size)...(2* comparisons * key_size)]
       hamming_distance(bytes_to_hex(block_1), bytes_to_hex(block_2)) / key_size.to_f
     end
 
