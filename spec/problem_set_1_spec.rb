@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'securerandom'
+require 'base64'
 
 RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
   describe 'challenge 1' do
@@ -10,7 +11,6 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
     let(:input_converted_to_bytes) { hex_to_chars(input_as_hex) }
 
     it 'can convert hex to bytes' do
-      require 'base64'
       expect(
         Base64.strict_encode64(
           input_converted_to_bytes
@@ -35,8 +35,8 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
     let(:expected) { "Cooking MC's like a pound of bacon" }
 
     it 'can get a good sentence score' do
-      expect(sentence_score(bytes_to_hex('How now brown cow'.bytes))).to eq(1)
-      expect(sentence_score(bytes_to_hex('@**'.bytes))).to eq(0)
+      expect(sentence_score(bytes_to_hex('How now brown cow'.bytes))).to eq(1.0)
+      expect(sentence_score(bytes_to_hex('@**'.bytes))).to eq(0.5)
     end
 
     it 'can find a char to decrypt a string' do
@@ -81,6 +81,13 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
 
     it 'has file' do
       expect(File.exist?(file_path)).to be(true), 'Missing file. Redownload from https://cryptopals.com/sets/1/challenges/6'
+    end
+
+    it 'can parse the file' do
+      file_data_as_bytes = Base64.decode64(file_data).bytes
+      file_data_as_hex = bytes_to_hex(file_data_as_bytes)
+      key = find_encoding_bytes_for_string(file_data_as_hex)
+      expect(hex_to_chars(encrypt(hex_to_chars(file_data_as_hex), key.map(&:chr).join))).to match(/Vanilla Ice/)
     end
 
     describe 'hamming_distance' do

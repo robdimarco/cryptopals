@@ -55,11 +55,20 @@ end
 # Takes in a hex string and sees how likely the string is to being
 # a sentence.
 #
-# @param hex_string - Input hex tring
+# @param hex_string - Input hex String
 # @returns Float between 0 and 1 representing how likely a string is to being a sentence
-def sentence_score(hex_string)
+def sentence_score(hex_string) # rubocop:disable Metrics/MethodLength
   real_string = hex_to_chars(hex_string).chars
-  real_string.map { |i| i.match(/[\w ]/) ? 1 : 0 }.sum / real_string.length.to_f
+  real_string.map do |chr|
+    case chr.ord
+    when 33..64, 91..96, 123..127
+      0.5 # punctuation / numbers
+    when 32, 65..90, 97..122
+      1
+    else
+      -2.5 # control characters
+    end
+  end.sum / real_string.length.to_f
 end
 
 DecodedString = Struct.new(:encoding_byte, :decoded_string)
@@ -106,16 +115,16 @@ def find_encoding_bytes_for_string(string)
   end
 end
 
-# @param string - Encrypted string (in hex)
+# @param encrypted_string - Encrypted string (in hex)
 # @returns Array[Array[bytes]]
 #
-def string_to_arrays_of_same_encrypted_bytes(string)
+def string_to_arrays_of_same_encrypted_bytes(encrypted_string)
   key_size = find_key_size_for_encrypted_file(encrypted_string)
 
   # Set up array of arrays, with one array for each byte in a chunk
   rv = []
   key_size.times { rv << [] }
-  bytes = hex_to_bytes(string)
+  bytes = hex_to_bytes(encrypted_string)
   bytes.each_with_index do |byte, idx|
     rv[idx % key_size] << byte
   end
@@ -143,9 +152,15 @@ end
 # @param max_key_size - Largest possible key size
 # @param comparisons - Number of comparisons to make. More comparisons, more likely to get right value
 # @returns Integer representing most likely key size
-def find_key_size_for_encrypted_file(string, min_key_size: 2, max_key_size: 40, comparisons: 4) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+def find_key_size_for_encrypted_file(string, min_key_size: 2, max_key_size: 40, comparisons: 7)
+  find_potential_key_sizes_for_encrypted_file(
+    string, min_key_size: min_key_size, max_key_size: max_key_size, comparisons: comparisons
+  )[0]
+end
+
+def find_potential_key_sizes_for_encrypted_file(string, min_key_size: 2, max_key_size: 40, comparisons: 7) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
   bytes = hex_to_bytes(string)
-  (min_key_size..max_key_size).to_a.min_by do |key_size|
+  (min_key_size..max_key_size).to_a.sort_by do |key_size|
     blocks = (0...(2 * comparisons)).map do |i|
       offset = i * key_size
       bytes[offset...(offset + key_size)]
