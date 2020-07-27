@@ -139,11 +139,7 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
     end
 
     it 'can parse file' do
-      cipher = OpenSSL::Cipher.new('AES-128-ECB')
-      cipher.decrypt
-      cipher.key = key
-
-      expect(cipher.update(encrypted) + cipher.final).to match(/Play that funky music/)
+      expect(decrypt_with_aes_ecb(encrypted)).to match(/Play that funky music/)
     end
   end
 

@@ -194,6 +194,20 @@ def decoded_string_from_hex(encoded_string)
   hex_to_chars(vals[0].decoded_string)
 end
 
+def decrypt_with_aes_ecb(encrypted)
+  cipher = OpenSSL::Cipher.new('AES-128-ECB')
+  cipher.decrypt
+  cipher.key = key
+  cipher.update(encrypted) + cipher.final
+end
+
+def encrypt_with_aes_ecb(encrypted)
+  cipher = OpenSSL::Cipher.new('AES-128-ECB')
+  cipher.encrypt
+  cipher.key = key
+  cipher.update(encrypted) + cipher.final
+end
+
 #
 # Problem Set 2
 #
