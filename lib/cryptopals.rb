@@ -59,8 +59,6 @@ end
 # @returns Float between 0 and 1 representing how likely a string is to being a sentence
 def sentence_score(hex_string)
   real_string = hex_to_chars(hex_string).chars
-  words = real_strip.scan(/[\w+]/)
-
   real_string.map { |i| i.match(/[\w ]/) ? 1 : 0 }.sum / real_string.length.to_f
 end
 
@@ -93,23 +91,70 @@ def encrypt(string, key)
   xor_bytes(string.bytes, full_key[0..string.length].bytes)
 end
 
+# @param string - Plain text string to encrypt
+# @returns Array[byte] - Bytes representing the encryption key
+def find_encoding_bytes_for_string(string)
+  arrays_of_bytes = string_to_arrays_of_same_encrypted_bytes(string)
+  encoded_strings = arrays_of_bytes.map { |bytes| bytes_to_hex(bytes) }
+
+  encoded_strings.map do |encoded_string|
+    best = potential_strings_from_single_char_xor(encoded_string).max_by do |val|
+      sentence_score(val.decoded_string)
+    end
+
+    best.encoding_byte
+  end
+end
+
+# @param string - Encrypted string (in hex)
+# @returns Array[Array[bytes]]
+#
+def string_to_arrays_of_same_encrypted_bytes(string)
+  key_size = find_key_size_for_encrypted_file(encrypted_string)
+
+  # Set up array of arrays, with one array for each byte in a chunk
+  rv = []
+  key_size.times { rv << [] }
+  bytes = hex_to_bytes(string)
+  bytes.each_with_index do |byte, idx|
+    rv[idx % key_size] << byte
+  end
+
+  rv
+end
+
+# @param encrypted_string - Encrypted string (in hex)
+# @returns Array[String] string chunked up by expected key size.
+def encrypted_file_in_likely_key_sized_chunks(encrypted_string)
+  blocks = []
+  offset = 0
+  loop do
+    break if offset > encrypted_string.size
+
+    blocks << encrypted_string[offset...(offset + key_size)]
+    offset += key_size
+  end
+  blocks
+end
+
 #
 # @param string - Encrypted string (in hex)
 # @param min_key_size - Smallest possible key size
 # @param max_key_size - Largest possible key size
 # @param comparisons - Number of comparisons to make. More comparisons, more likely to get right value
-def find_key_size_for_encrypted_file(string, min_key_size: 2, max_key_size: 40, comparisons: 4)
+# @returns Integer representing most likely key size
+def find_key_size_for_encrypted_file(string, min_key_size: 2, max_key_size: 40, comparisons: 4) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
   bytes = hex_to_bytes(string)
   (min_key_size..max_key_size).to_a.min_by do |key_size|
-    blocks = (0...(2*comparisons)).map do |i|
+    blocks = (0...(2 * comparisons)).map do |i|
       offset = i * key_size
       bytes[offset...(offset + key_size)]
     end
 
-    distances = (0...comparisons).map do |i|
-      block_1 = bytes[0...(comparisons * key_size)]
-      block_2 = bytes[(comparisons * key_size)...(2* comparisons * key_size)]
-      hamming_distance(bytes_to_hex(block_1), bytes_to_hex(block_2)) / key_size.to_f
+    distances = (0...comparisons).map do |idx|
+      block1 = blocks[2 * idx]
+      block2 = blocks[2 * idx + 1]
+      hamming_distance(bytes_to_hex(block1), bytes_to_hex(block2)) / key_size.to_f
     end
 
     # Now get the average distance
@@ -117,8 +162,8 @@ def find_key_size_for_encrypted_file(string, min_key_size: 2, max_key_size: 40, 
   end
 end
 
-def hamming_distance(s1, s2)
-  s1.bytes.zip(s2.bytes).map { |(a, b)| (a ^ b).to_s(2) }.join.scan('1').size
+def hamming_distance(string1, string2)
+  string1.bytes.zip(string2.bytes).map { |(a, b)| (a ^ b).to_s(2) }.join.scan('1').size
 end
 
 # Takes a hex string that has been XOR'd with a single character and iterates through single characters

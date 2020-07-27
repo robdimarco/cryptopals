@@ -75,9 +75,10 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
     end
   end
 
-  describe 'challenge 6' do
+  describe 'challenge 6' do # rubocop:disable Metrics/BlockLength
     let(:file_path) { 'data/set-1-challenge-6.txt' }
-    let(:file_data) { File.read(file_path).lines.map(&:strip).join}
+    let(:file_data) { File.read(file_path).lines.map(&:strip).join }
+
     it 'has file' do
       expect(File.exist?(file_path)).to be(true), 'Missing file. Redownload from https://cryptopals.com/sets/1/challenges/6'
     end
@@ -88,16 +89,34 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
       end
     end
 
-    describe 'find_key_size_for_encrypted_file' do
-      it 'calculates the correct key size' do
-        input = File.read(__FILE__)
-        key = SecureRandom.random_bytes(23).bytes.map(&:chr).join
-        expect(find_key_size_for_encrypted_file(encrypt(input, key))).to eq(key.length)
-      end
-    end
+    describe 'with test encrypted strings' do
+      let(:test_input) { File.read(__FILE__) }
+      let(:test_key_in_bytes) { SecureRandom.random_bytes(23).bytes }
+      let(:test_key_in_hex) { bytes_to_hex(test_key_in_bytes) }
+      let(:test_key_in_s) { hex_to_chars(test_key_in_hex) }
+      let(:encrypted_string) { encrypt(test_input, test_key_in_s) }
 
-    it 'can decrypt file with arbitrary key', speed: :slow do
-      strings = File.read(file_path).lines.map(&:strip)
+      describe 'find_key_size_for_encrypted_file' do
+        it 'calculates the correct key size' do
+          expect(find_key_size_for_encrypted_file(encrypted_string)).to \
+            eq(test_key_in_bytes.length)
+        end
+      end
+
+      describe 'string_to_arrays_of_same_encrypted_bytes' do
+        it 'creates the correct arrays' do
+          byte_arrays = string_to_arrays_of_same_encrypted_bytes(encrypted_string)
+          expect(byte_arrays.size).to eq(test_key_in_bytes.length)
+          expect(byte_arrays[0].length).to eq((test_input.length / test_key_in_bytes.length) + 1)
+          expect(byte_arrays.sum(&:size)).to eq(test_input.length)
+        end
+      end
+
+      describe 'find_encoding_bytes_for_string', speed: :slow do
+        it 'calculates the encoding bytes' do
+          expect(find_encoding_bytes_for_string(encrypted_string)).to eq(test_key_in_bytes)
+        end
+      end
     end
   end
 end
