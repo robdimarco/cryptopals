@@ -102,8 +102,8 @@ end
 
 # @param string - Plain text string to encrypt
 # @returns Array[byte] - Bytes representing the encryption key
-def find_encoding_bytes_for_string(string)
-  arrays_of_bytes = string_to_arrays_of_same_encrypted_bytes(string)
+def find_encoding_bytes_for_string(string, key_size: nil)
+  arrays_of_bytes = string_to_arrays_of_same_encrypted_bytes(string, key_size: key_size)
   encoded_strings = arrays_of_bytes.map { |bytes| bytes_to_hex(bytes) }
 
   encoded_strings.map do |encoded_string|
@@ -118,8 +118,8 @@ end
 # @param encrypted_string - Encrypted string (in hex)
 # @returns Array[Array[bytes]]
 #
-def string_to_arrays_of_same_encrypted_bytes(encrypted_string)
-  key_size = find_key_size_for_encrypted_file(encrypted_string)
+def string_to_arrays_of_same_encrypted_bytes(encrypted_string, key_size: nil)
+  key_size ||= find_key_size_for_encrypted_file(encrypted_string)
 
   # Set up array of arrays, with one array for each byte in a chunk
   rv = []

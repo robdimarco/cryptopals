@@ -146,4 +146,22 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
       expect(cipher.update(encrypted) + cipher.final).to match(/Play that funky music/)
     end
   end
+
+  describe 'challenge 8' do
+    let(:file_path) { 'data/set-1-challenge-8.txt' }
+    let(:file_data) { File.read(file_path).lines.map(&:strip) }
+    let(:encrypted) { Base64.strict_decode64(file_data).bytes.map(&:chr).join }
+    let(:key) { 'YELLOW SUBMARINE' }
+
+    it 'has file' do
+      expect(File.exist?(file_path)).to be(true), 'Missing file. Redownload from https://cryptopals.com/sets/1/challenges/7'
+    end
+
+    it 'can find string' do
+      encrypted_line = file_data.detect do |line|
+        find_key_size_for_encrypted_file(line, max_key_size: 20, comparisons: 1) == 16
+      end
+      expect(encrypted_line).to_not be_empty
+    end
+  end
 end
