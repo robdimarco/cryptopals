@@ -3,6 +3,7 @@
 require 'spec_helper'
 require 'securerandom'
 require 'base64'
+require 'openssl'
 
 RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
   describe 'challenge 1' do
@@ -124,6 +125,25 @@ RSpec.describe 'cryptopals.com Set 1' do # rubocop:disable Metrics/BlockLength
           expect(find_encoding_bytes_for_string(encrypted_string)).to eq(test_key_in_bytes)
         end
       end
+    end
+  end
+
+  describe 'challenge 7' do
+    let(:file_path) { 'data/set-1-challenge-7.txt' }
+    let(:file_data) { File.read(file_path).lines.map(&:strip).join }
+    let(:encrypted) { Base64.strict_decode64(file_data).bytes.map(&:chr).join }
+    let(:key) { 'YELLOW SUBMARINE' }
+
+    it 'has file' do
+      expect(File.exist?(file_path)).to be(true), 'Missing file. Redownload from https://cryptopals.com/sets/1/challenges/7'
+    end
+
+    it 'can parse file' do
+      cipher = OpenSSL::Cipher.new('AES-128-ECB')
+      cipher.decrypt
+      cipher.key = key
+
+      expect(cipher.update(encrypted) + cipher.final).to match(/Play that funky music/)
     end
   end
 end
