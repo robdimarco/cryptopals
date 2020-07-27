@@ -193,3 +193,14 @@ def decoded_string_from_hex(encoded_string)
 
   hex_to_chars(vals[0].decoded_string)
 end
+
+#
+# Problem Set 2
+#
+
+def pkcs7_pad(string, block_size)
+  pad_needed = block_size - string.length
+  raise 'String must not be bigger than block size' if pad_needed.negative?
+
+  string + ([pad_needed.chr] * pad_needed).join
+end
